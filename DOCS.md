@@ -3,7 +3,7 @@
 ## Project setup and Gulp installation
 FastShell utilises open source components running on the Terminal/command-line for it's workflow, you'll need to install Node and Gulp. Here's a walkthrough of how to get a project up and running in minutes. Once Node and Gulp are installed all future projects running Gulp are instant.
 
-1. Install [Node.js](http://nodejs.org/download), [Sass](http://sass-lang.com/tutorial.html) and [Git](http://git-scm.com) on your machine. If you're a Windows user you'll also need to install [Ruby](http://rubyinstaller.org/downloads).
+1. Install [Node.js] using Homebrew, not (http://nodejs.org/download) Homebrew install will make sure you have correct permissions for npm (no global sudo trickle down permissions in Mac OS), [Sass](http://sass-lang.com/tutorial.html) and [Git](http://git-scm.com) on your machine. If you're a Windows user you'll also need to install [Ruby](http://rubyinstaller.org/downloads).
 2. [Install Gulp](http://Gulpjs.com/) using `npm install -g gulp`. You may need to use `sudo` in front of the Gulp install command to give it permissions.
 3. Fork/Clone/Download the FastShell repository into your machine, you should hopefully see all the files and folders.
 4. Open Terminal and install FastShell's dependencies to `node_modules` directory in your project directory using `npm install`. You don't need `sudo` to do this.
@@ -18,22 +18,11 @@ FastShell's scaffolding is lightweight and super easy. It takes into account a b
 
 Once running, FastShell does the following:
 
-1. Mounts the `app` folder onto a local server
-2. Listens for changes inside the `src` directory, and compiles the necessary files into the `app` directory, which will then automaticaly livereload or inject changes. CSS changes are injected, all other changes force a page reload.
+1. Mounts the `dev` folder onto a local server
+2. Listens for changes inside the `src` directory, and compiles the necessary files into the `dev` directory, which will then automaticaly livereload or inject changes. CSS changes are injected, all other changes force a page reload.
 
 ### Dynamic copyright/project banners
-The package.json includes the dependencies for the project as well as information about the project. Entries here will be dynamically appended to the top of generated `.css` and `.js` files, by default it ships with FastShell's banner:
-
-````js
-/*!
- * fastshell
- * Fiercely quick and opinionated front-ends
- * https://HosseinKarami.github.io/fastshell
- * @author Hossein Karami
- * @version 1.0.0
- * Copyright 2014. MIT licensed.
- */
-````
+The package.json includes the dependencies for the project as well as information about the project. Entries here will be dynamically appended to the top of generated `.css` and `.js` files, by default it ships with FastShell's banner.
 
 ### Browser-Sync
 Gulp's browser-sync will inject the following script into your HTML for you (not included when you deploy):

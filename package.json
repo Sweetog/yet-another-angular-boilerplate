@@ -1,13 +1,13 @@
 {
-  "name": "Processing-Point-Empire",
-  "title": "AngularJs Frontend for Empire",
-  "author": "Brian Ogden, Nick Grato, Sean Hones",
+  "name": "yet-another-angular-boilerplate",
+  "title": "AngularJs Frontend Continous Integration, Browserify Common JS, Controller As patterns",
+  "author": "Brian Ogden",
   "url": "",
   "version": "0.0.1",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://[username]@bitbucket.org/uacceptcloud/cloud.git"
+    "url": "https://github.com/Sweetog/yet-another-angular-boilerplate.git"
   },
   "devDependencies": {
     "angular": "^1.5.8",
