@@ -2,13 +2,14 @@
 
 <head>
     <base href="/">
+    <!--when using ngRoute html5Mode = true-->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- PREVENT SEARCH ENGINE INDEXING -->
     <meta name="robots" content="NOINDEX, NOFOLLOW">
     <link rel="icon" href="">
-    <title></title>
+    <title ng-bind="title || 'My App'"></title>
     <!-- CSS STYLES -->
     <!-- inject-vendor:css -->
     <!-- endinject -->
@@ -23,14 +24,23 @@
 
 <body>
     <toaster-container toaster-options="{'time-out': 3000, 'position-class': 'toast-bottom-right', 'close-button':true, 'animation-class': 'toast-bottom-right'}"></toaster-container>
-    <!--<ui-view>-->
-        <!-- ui-route page content -->
-    <!--</ui-view>-->
     <h4>Hello World</h4>
-    <li class="active">
-        <a href="/login">Login</a>
-    </li>
-    <ng-view></ng-view>
+    <ul>
+        <li>
+            <a href="/login">Login ngRoute html5Mode = true way</a>
+        </li>
+    </ul>
+    <ui-view>
+        <ul>
+            <li>
+                <a ui-sref="login" style="cursor: pointer;">Login ui-router way</a>
+            </li>
+        </ul>
+        <!-- ui-route page content -->
+    </ui-view>
+    <ng-view>
+        <!--ngRoute page content-->
+    </ng-view>
     <!-- inject-vendor:js -->
     <!-- endinject -->
     <!-- inject:js -->

@@ -12,16 +12,16 @@ function appRun(routehelper) {
 function getRoutes() {
     return [
         {
-            url: '/login',
+            url: '/login', //used with ngRoute
+            state: { //used with ui-router
+                name: 'login',
+                abstract: true,
+            },
             config: {
                 templateUrl: 'app/login/login.html',
                 controller: 'Login',
                 controllerAs: 'vm',
-                title: 'login',
-                state: {
-                    name: 'app.login',
-                    abstract: true,
-                }
+                title: 'Login'
                 /*settings: {
                     nav: 2,
                     content: '<i class="fa fa-lock"></i> Avengers'
@@ -29,13 +29,4 @@ function getRoutes() {
             }
         }
     ];
-
-
-   /* .state('app.login', {
-         abstract: true,
-         url: "/login",
-         templateUrl: "components/login/templates/login.html",
-         controller: "loginController",
-         controllerAs: "vm"
-     })*/
 }

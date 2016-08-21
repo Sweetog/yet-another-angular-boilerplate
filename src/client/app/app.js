@@ -27,22 +27,3 @@ angular.module('app', [
      */
     'app.login'
 ]);
-/*.controller('oneCtrl', function($scope) {
-    console.log('test oneCtrl called');
- })
-.config(function($routeProvider, $locationProvider) {
-
-     $routeProvider
-         .when('/login', {
-             title: 'Login',
-             controller: 'Login',
-             templateUrl: 'app/login/login.html'
-         })
-         .otherwise({
-             redirectTo: '/'
-         });
-
-     $locationProvider.html5Mode(true);
-
-     console.log('test configuration loaded');
- });*/

@@ -1,4 +1,3 @@
-
 'use strict';
 
 angular
@@ -25,8 +24,7 @@ function routehelperConfig() {
     };
 }
 
-function routehelper($location, $rootScope, $route, logger, routehelperConfig) {
-
+function routehelper($location, $rootScope, logger, routehelperConfig) {
     var handlingRouteChangeError = false;
     var routeCounts = {
         errors: 0,
@@ -36,7 +34,7 @@ function routehelper($location, $rootScope, $route, logger, routehelperConfig) {
     var $routeProvider = routehelperConfig.config.$routeProvider;
 
     var service = {
-        configureRoutes: configureRoutes,
+        configureRoutes: configureRoutesUiRouter, //for ngRoute use configureRoutesNgRoute
         getRoutes: getRoutes,
         routeCounts: routeCounts
     };
@@ -46,40 +44,43 @@ function routehelper($location, $rootScope, $route, logger, routehelperConfig) {
     return service;
     ///////////////
 
-    function configureRoutes(routes) {
-        logger.debug('routehelper.configureRoutes()', routes);
+    function configureRoutesUiRouter(routes) {
+        routes.forEach(function(route) {
+            route.config.resolve =
+                angular.extend(route.config.resolve || {}, routehelperConfig.config.resolveAlways);
+            logger.debug("route", route);
+            $routeProvider.state(route.state.name, route.config);
+        });
+        //$routeProvider.otherwise({redirectTo: '/'}); need to inject $urlRouterProvider for ui-router
+    }
+
+    function configureRoutesNgRoute(routes) {
         routes.forEach(function(route) {
             route.config.resolve =
                 angular.extend(route.config.resolve || {}, routehelperConfig.config.resolveAlways);
             logger.debug("route", route);
             $routeProvider.when(route.url, route.config);
         });
-        $routeProvider.otherwise({redirectTo: '/'});
+        $routeProvider.otherwise({
+            redirectTo: '/'
+        });
     }
 
     function handleRoutingErrors() {
         // Route cancellation:
-        // On routing error, go to the dashboard.
+        // On routing error, go to root.
         // Provide an exit clause if it tries to do it twice.
-        $rootScope.$on('$routeChangeError', //ngRoute - $routeChangeError
-            function(event, toState, toParams, fromState, fromParams, error) { //ngRoute - function(event, current, previous, rejection)
-                if (handlingRouteChangeError) {
-                    return;
-                }
-                routeCounts.errors++;
-                handlingRouteChangeError = true;
-                var destination = (current && (current.title || current.name || current.loadedTemplateUrl)) ||
-                    'unknown target';
-                var msg = 'Error routing to ' + destination + '. ' + (rejection.msg || '');
-                logger.warning(msg, [current]);
-                $location.path('/');
+        $rootScope.$on('$stateChangeError',
+            function(event, toState, toParams, fromState, fromParams, error) { 
+                logger.debug('routerhelper.stateChangeError');
             }
         );
     }
 
     function init() {
         handleRoutingErrors();
-        updateDocTitle();
+        //updateDocTitleNgRoute();
+        updateDocTitleUiRoute();
     }
 
     function getRoutes() {
@@ -95,12 +96,23 @@ function routehelper($location, $rootScope, $route, logger, routehelperConfig) {
         return routes;
     }
 
-    function updateDocTitle() {
-        $rootScope.$on('$routeChangeSuccess', //ngRoute - $routeChangeSuccess
+    function updateDocTitleUiRoute() {
+        $rootScope.$on('$stateChangeSuccess', //ngRoute - $routeChangeSuccess
             function(event, toState, toParams, fromState, fromParams) { //ngRoute - function(event, current, previous)
                 routeCounts.changes++;
                 handlingRouteChangeError = false;
-                var title = routehelperConfig.config.docTitle + ' ' + (toState || '');
+                var title = routehelperConfig.config.docTitle + ' ' + (toState.title || '');
+                $rootScope.title = title; // data bind to <title>
+            }
+        );
+    }
+
+    function updateDocTitleNgRoute() {
+        $rootScope.$on('$routeChangeSuccess',
+            function(event, current, previous) {
+                routeCounts.changes++;
+                handlingRouteChangeError = false;
+                var title = routehelperConfig.config.docTitle + ' ' + (current.title || '');
                 $rootScope.title = title; // data bind to <title>
             }
         );
