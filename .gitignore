@@ -1,0 +1,93 @@
+
+## Gulp generated directories
+build
+dev
+report
+
+## Ignore Visual Studio  Project #
+*.user
+*.gpState
+*.suo
+bin
+obj
+/packages
+
+
+## Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+report/
+
+## Node.js
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+pids
+logs
+results
+npm-debug.log
+node_modules
+
+##Ignore Node & Bower
+node_modules
+**/test/coverage
+/reports
+src/components
+bower_components
+
+## Sass
+.sass-cache
+
+## OS X
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Packages
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.xap
+*.zip
+
+## Logs and databases
+*.log
+*.sql
+*.sqlite
+# *.sdf
+*.mdf
+*.ldf
+
+## mongo db
+#Don't commit Mongo Database files
+*.lock
+*.0
+*.1
+*.ns
+journal
+

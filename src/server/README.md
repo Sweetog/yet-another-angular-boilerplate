@@ -1,0 +1,1 @@
+#Node Server Placeholder, we will see if we need it, based on deployment requirements and how we handle signon. For production deployment,we may prefer to use a NodeJs server, to serve the app requests instead of IIS/ASP.NET

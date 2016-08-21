@@ -1,0 +1,33 @@
+{
+  "client": "./src/client/",
+  "server": "./src/server/",
+  "dev": "./dev/",
+  "api": "/api",
+  "data": "",
+  "test": "./src/client/test/",
+  "html": "./src/client/**/*.html",
+  "htmltemplates": "./src/client/app/**/*.html",
+  "buildjs": "bundle.js",
+  "buildcss": "bundle.css",
+  "index": "index.html",
+  "browserified": "browserified.js",
+  "templates": "templates.js",
+  "vendorcssmin": "vendor.min.css",
+  "vendorjs-notneeded-browserify": [
+    "./node_modules/angular/angular.js",
+    "./node_modules/angular-animate/angular-animate.js",
+    "./node_modules/angular-route/angular-route.js",
+    "./node_modules/angularjs-toaster/toaster.js"
+  ],
+  "js": [
+    "./src/client/app/**/*.js"
+  ],
+  "vendorcss": [
+    "./node_modules/angularjs-toaster/toaster.scss"
+  ],
+  "css": [
+    "./src/client/app/scss/style.scss"
+  ],
+  "report": "./report/",
+  "build": "./build/"
+}
