@@ -71,8 +71,18 @@ function routehelper($location, $rootScope, logger, routehelperConfig) {
         // On routing error, go to root.
         // Provide an exit clause if it tries to do it twice.
         $rootScope.$on('$stateChangeError',
-            function(event, toState, toParams, fromState, fromParams, error) { 
-                logger.debug('routerhelper.stateChangeError');
+            function(event, toState, toParams, fromState, fromParams, error) {
+                if (handlingRouteChangeError) {
+                    +logger.debug('routerhelper.stateChangeError');
+                    return;
+                }
+                routeCounts.errors++;
+                handlingRouteChangeError = true;
+                var destination = (toState && (toState.title || toState.state)) ||
+                    'unknown target';
+                var msg = 'Error routing to ' + destination + '. ' + (error.msg || '');
+                logger.warning(msg, [toState]);
+                $location.path('/');
             }
         );
     }
