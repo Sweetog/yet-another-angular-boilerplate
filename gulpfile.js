@@ -11,7 +11,6 @@ var gulp = require('gulp'),
     package = require('./package.json'),
     config = require('./gulp.config.json'),
     plugins = require('gulp-load-plugins')(),
-    gutil = require('gulp-util'),
     glob = require('glob'),
     plato = require('plato'), //js analyzer 
     merge = require('merge-stream'),
@@ -37,13 +36,22 @@ var banner = [
 ].join('');
 
 
-gulp.task('html', function(){
-	var dest = config.dev + 'app';
+gulp.task('html', ['content'], function(){
+    var dest = config.dev + 'app';
 
-	log('copying templates/html to ' + dest);
+    log('copying templates/html to ' + dest);
 
-  	gulp.src(config.client + 'app/**/*.html')
-		.pipe(gulp.dest(dest));
+    gulp.src(config.client + 'app/**/*.html')
+        .pipe(gulp.dest(dest));
+});
+
+gulp.task('content', function(){
+    var dest = config.dev + 'content';
+
+    log('copying content to ' + dest);
+
+    gulp.src(config.client + 'content/**/*.**')
+        .pipe(gulp.dest(dest));
 });
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -71,9 +79,9 @@ gulp.task('build-templatecache', function() {
 });
 
 gulp.task('css', ['vendorcss'], function () {
-	var dest = config.dev + 'app/css';
+    var dest = config.dev + 'app/css';
 
-	log('Compiling SASS and source mapping to ' + dest);
+    log('Compiling SASS and source mapping to ' + dest);
 
     return gulp.src(config.css)
     .pipe(sourcemaps.init())
@@ -136,14 +144,14 @@ gulp.task('build-js', ['build-templatecache'], function(){
         //.pipe(plugins.modernizr()) //not sure if we need this or not - Brian Ogden - 8-21-2016
         .pipe(plugins.concat(config.buildjs))
         .pipe(plugins.ngAnnotate({
-    	        add: true,
-    	        single_quotes: true
-    	 }))
+                add: true,
+                single_quotes: true
+         }))
         .pipe(plugins.bytediff.start())
-    	.pipe(plugins.uglify({
-    	        mangle: true
-    	}))
-    	.pipe(plugins.bytediff.stop(bytediffFormatter))
+        .pipe(plugins.uglify({
+                mangle: true
+        }))
+        .pipe(plugins.bytediff.stop(bytediffFormatter))
         .pipe(header(banner, { package : package }))
         .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest(config.build));  //save .min.js
@@ -172,7 +180,12 @@ gulp.task('browserify', function() {
   var bundle = function(reloadBrowser) {
     var stream = bundler
       .bundle()
-      .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+      .on('error', function(err){
+            log(err.message);
+            notify('Browserify error: javascript failed to compile, browser will not refresh till .js code fixed');
+            // end this stream
+            this.emit('end');
+        })
       .pipe(source('app/' + config.browserified))
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
@@ -201,9 +214,9 @@ gulp.task('browserify', function() {
 });
 
 gulp.task('index', function () {
-	var dest = config.dev;
+    var dest = config.dev;
 
-	log('Copying and injecting index.html to ' + dest);
+    log('Copying and injecting index.html to ' + dest);
 
     var target = gulp.src(config.client + config.index);
      // It's not necessary to read the files (will speed up things), we're only after their config: 
@@ -211,7 +224,7 @@ gulp.task('index', function () {
     var vendorCss = gulp.src(config.dev + 'app/vendorcss/**/*.css',  {read: false});
     var sources = gulp.src(config.dev + 'app/*.js');
 
- 	var options = {
+    var options = {
          addRootSlash: false,
          ignorePath: config.dev.substring(1)
     };
@@ -222,7 +235,7 @@ gulp.task('index', function () {
     };
 
     return target
-    	.pipe(plugins.inject(sources, options))
+        .pipe(plugins.inject(sources, options))
         .pipe(plugins.inject(vendorCss, optionsVendor))
         .pipe(plugins.inject(sourcesCss, options))
         .pipe(gulp.dest(dest));
@@ -289,29 +302,29 @@ gulp.task('build-rev', function() {
 //
 /////////////////////////////////////////////////////////////////////////////////////
 gulp.task('browser-sync', function() {
-	if(browserSync.active) {
-		return;
-	}
+    if(browserSync.active) {
+        return;
+    }
 
-	log('Starting BrowserSync on port 3000');
+    log('Starting BrowserSync on port ' + config.port);
 
-	browserSync({
-		server: {
-		    baseDir: config.dev
-		},
-		port: 3000,
-		//files: [config.client + '/**/*.*'], //files to watch, only for simple apps
-		ghostMode: { // these are the defaults t,f,t,t
-		    clicks: true,
-		    location: false,
-		    forms: true,
-		    scroll: true
-		},
-		//logLevel: 'debug',
-		//logPrefix: 'gulp-patterns',
-		notify: true
-		//reloadDelay: 2000
-	});
+    browserSync({
+        server: {
+            baseDir: config.dev
+        },
+        port: config.port,
+        //files: [config.client + '/**/*.*'], //files to watch, only for simple apps, you will break if you use in this app
+        ghostMode: { // these are the defaults t,f,t,t
+            clicks: true,
+            location: false,
+            forms: true,
+            scroll: true
+        },
+        //logLevel: 'debug',
+        //logPrefix: 'gulp-patterns',
+        notify: true
+        //reloadDelay: 2000
+    });
 });
 
 gulp.task('bs-reload', function () {
@@ -383,9 +396,9 @@ gulp.task('build-js-tidy', function() {
 //
 /////////////////////////////////////////////////////////////////////////////////////
 gulp.task('dev', function () {
-	runSequence(
+    runSequence(
         'clean',
-		['css', 'browserify', 'html'],
+        ['css', 'browserify', 'html'],
         'index',
         'browser-sync',
         onDevComplete
@@ -451,13 +464,7 @@ gulp.task('build', function() {
 //
 /////////////////////////////////////////////////////////////////////////////////////
 function onDevComplete() {
-    return gulp
-        .src('')
-        .pipe(plugins.notify({
-                onLast: false,
-                message: 'Dev running!'
-            })
-        );
+   notify('Running app on localhost:' + config.port);
 }
 
 
@@ -468,14 +475,19 @@ function onDevComplete() {
 //
 /////////////////////////////////////////////////////////////////////////////////////
 function onBuildComplete() {
+    notify('Deployed code!');
+}
+
+function notify(message) {
     return gulp
         .src('')
         .pipe(plugins.notify({
                 onLast: true,
-                message: 'Deployed code!'
+                message: message
             })
         );
 }
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////

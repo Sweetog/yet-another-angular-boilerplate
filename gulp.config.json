@@ -14,6 +14,7 @@
   "browserified": "browserified.js",
   "templates": "templates.js",
   "vendorcssmin": "vendor.min.css",
+  "port": 3000,
   "vendorjs-notneeded-browserify": [
     "./node_modules/angular/angular.js",
     "./node_modules/angular-animate/angular-animate.js",
