@@ -1,6 +1,7 @@
 {
   "client": "./src/client/",
   "server": "./src/server/",
+  "appjs": "./src/client/app/app.js",
   "dev": "./dev/",
   "api": "/api",
   "data": "",
