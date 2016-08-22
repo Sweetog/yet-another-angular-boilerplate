@@ -1,6 +1,6 @@
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
-    browserify = require('gulp-browserify'),
+    browserify = require('browserify'),
     browserSync = require('browser-sync'),
     autoprefixer = require('gulp-autoprefixer'),
     jshint = require('gulp-jshint'), //js linter
@@ -16,7 +16,10 @@ var gulp = require('gulp'),
     plato = require('plato'), //js analyzer 
     merge = require('merge-stream'),
     runSequence = require('run-sequence'),
-    del = require('del');
+    del = require('del'),
+    source = require('vinyl-source-stream')
+    watchify = require('watchify'),
+    buffer = require('vinyl-buffer');
 
 var log = plugins.util.log;
 var colors = plugins.util.colors;
@@ -40,8 +43,7 @@ gulp.task('html', function(){
 	log('copying templates/html to ' + dest);
 
   	gulp.src(config.client + 'app/**/*.html')
-		.pipe(gulp.dest(dest))
-        .pipe(browserSync.reload({stream:true}));
+		.pipe(gulp.dest(dest));
 });
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +83,7 @@ gulp.task('css', ['vendorcss'], function () {
     //.pipe(rename({ suffix: '.min' }))
     //.pipe(header(banner, { package : package }))
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest(dest))
-    .pipe(browserSync.reload({stream:true}));
+    .pipe(gulp.dest(dest));
 });
 
 gulp.task('vendorcss', function () {
@@ -132,7 +133,7 @@ gulp.task('build-js', ['build-templatecache'], function(){
     var source = [].concat(config.build + '*.js');
 
     return gulp.src(source)
-        .pipe(plugins.modernizr())
+        //.pipe(plugins.modernizr()) //not sure if we need this or not - Brian Ogden - 8-21-2016
         .pipe(plugins.concat(config.buildjs))
         .pipe(plugins.ngAnnotate({
     	        add: true,
@@ -148,51 +149,57 @@ gulp.task('build-js', ['build-templatecache'], function(){
         .pipe(gulp.dest(config.build));  //save .min.js
 });
 
-// Browserify task
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// Browserify task, using Watchify to quickly rebuild dependencies after .js modifications
+// @return {Stream}
+//
+/////////////////////////////////////////////////////////////////////////////////////
 gulp.task('browserify', function() {
 
-    log('Reading the app\'s JavaScript and bundling dependencies to one file ' + config.browserified);
+  log('Reading the app\'s JavaScript and bundling dependencies to one file ' + config.browserified);
 
-    // Single point of entry (make sure not to src ALL your files, browserify will figure it out for you)
-    return gulp.src(config.client + 'app/app.js')
-            .pipe(browserify({
-                //insertGlobals: true,
-                debug: true
-            }))
-            // Bundle to a single file
-            //.pipe(plugins.concat(config.browserified))
-            .pipe(sourcemaps.init({loadMaps: true}))
-            .pipe(plugins.ngAnnotate({
-                add: true,
-                single_quotes: true
-            }))
-            .pipe(rename(config.browserified))
-            .pipe(sourcemaps.write('./'))
-            // Output it to our dist folder
-            .pipe(gulp.dest(config.dev + 'app'))
-            .pipe(browserSync.reload({stream:true, once: true}));
+  var bundler = browserify({
+    // Required watchify args
+    cache: {}, packageCache: {}, fullPaths: true,
+    // Browserify Options
+    entries: [config.appjs],
+    //xtensions: ['.coffee', '.hbs'],
+    debug: true
+  });
 
-});
-
-// Browserify task
-gulp.task('build-browserify', ['analyze', 'build-templatecache'], function() {
-
-    log('Reading the app\'s JavaScript and bundling dependencies to one file ' + config.browserified);
-
-    // Single point of entry (make sure not to src ALL your files, browserify will figure it out for you)
-    return gulp.src(config.client + 'app/app.js')
-        .pipe(browserify({
-            //insertGlobals: true,
-            debug: false
+  var bundle = function(reloadBrowser) {
+    var stream = bundler
+      .bundle()
+      .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+      .pipe(source('app/' + config.browserified))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
+      .pipe(plugins.ngAnnotate({
+            add: true,
+            single_quotes: true
         }))
-        // Bundle to a single file
-        //.pipe(plugins.concat(config.browserified))
-        .pipe(rename(config.browserified))
-        // Output it to our dist folder
-        .pipe(gulp.dest(config.build));
+       // Add transformation tasks to the pipeline here.
+      .pipe(sourcemaps.write('./')) // writes .map file
+      .pipe(gulp.dest(config.dev));
+
+      if(reloadBrowser) {
+        stream.pipe(browserSync.reload({stream:true}));
+      }
+
+      return stream;
+  };
+
+  bundler = watchify(bundler);
+  bundler.on('update', function() { 
+    log('watchify change!');
+    bundle(true);
+  });
+
+  return bundle();
 });
 
-//['js', 'css']
 gulp.task('index', function () {
 	var dest = config.dev;
 
@@ -218,8 +225,7 @@ gulp.task('index', function () {
     	.pipe(plugins.inject(sources, options))
         .pipe(plugins.inject(vendorCss, optionsVendor))
         .pipe(plugins.inject(sourcesCss, options))
-        .pipe(gulp.dest(dest))
-        .pipe(browserSync.reload({stream:true, once: true}));
+        .pipe(gulp.dest(dest));
 });
 
 gulp.task('build-index', function () {
@@ -294,7 +300,7 @@ gulp.task('browser-sync', function() {
 		    baseDir: config.dev
 		},
 		port: 3000,
-		files: [config.client + '/**/*.*'],
+		//files: [config.client + '/**/*.*'], //files to watch, only for simple apps
 		ghostMode: { // these are the defaults t,f,t,t
 		    clicks: true,
 		    location: false,
@@ -309,7 +315,7 @@ gulp.task('browser-sync', function() {
 });
 
 gulp.task('bs-reload', function () {
-    browserSync.reload();
+    browserSync.reload(); //
 });
 
 
@@ -360,7 +366,6 @@ gulp.task('build-js-tidy', function() {
 });
 
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 //
 // Big Gulps
@@ -386,34 +391,30 @@ gulp.task('dev', function () {
         onDevComplete
     );
 
-    gulp.watch(config.client + "**/*.scss", ['css']);
-    gulp.watch(config.client + "**/*.js", ['browserify']);
-    gulp.watch(config.client + "app/**/*.html", ['html']);
-    gulp.watch(config.client + "*.html", ['index']);
+    //javascript file changes are watched and reloaded with watchify, see gulp task 'browserify'
+    gulp.watch(config.client + "**/*.scss", function() {
+        log('calling .css reload sequence');
+        runSequence(
+            'css',
+            'bs-reload'
+        )
+    });
+    gulp.watch(config.client + "app/**/*.html", function() {
+        log('calling .html reload sequence');
+        runSequence(
+            'html',
+            'bs-reload'
+        )
+    });
+    gulp.watch(config.client + "index.html", function() {
+        log('calling index reload sequence');
+        runSequence(
+            'index',
+            'bs-reload'
+        )
+    });
 });
 
-/////////////////////////////////////////////////////////////////////////////////////
-//
-// Test dev build without running browser-sync
-// More of a debugging big-gulp, can be deleted
-//
-/////////////////////////////////////////////////////////////////////////////////////
-gulp.task('dev-test', function () {
-    runSequence(
-        'clean',
-        ['css', 'browserify', 'html'],
-        'index',
-        function(){
-            gulp
-                .src('')
-                .pipe(plugins.notify({
-                    onLast: true,
-                    message: 'Dev test complete!'
-                })
-            );
-        }
-    );
-});
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
