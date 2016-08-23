@@ -1,3 +1,14 @@
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// Big Gulps
+// gulp tasks that we run from cmd (big gulps are often a combination of multiple gulp tasks)
+// *dev -- "gulp dev" from cmd, this runs your localhost development enviroment
+// *build -- "gulp build" from cmd, this builds your deploy package for QA and PRD into ./build folder
+// *analyze -- "gulp analyze" from cmd, please run often, jslinting, js style and a plato report are generated ./reports folder
+// *clean -- "gulp clean" from cmd, cleans compiled/generated directories, except for npm_modules, that directory be crazy to del and no need
+/////////////////////////////////////////////////////////////////////////////////////
+
+
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
     browserify = require('browserify'),
@@ -164,65 +175,81 @@ gulp.task('build-js', ['build-templatecache'], function(){
 // @return {Stream}
 //
 /////////////////////////////////////////////////////////////////////////////////////
-gulp.task('browserify', function() {
 
-  log('Reading the app\'s JavaScript and bundling dependencies to one file ' + config.browserified);
-
-  var bundler = browserify({
+var bundler = browserify({
     // Required watchify args
     cache: {}, packageCache: {}, fullPaths: true,
     // Browserify Options
     entries: [config.appjs],
     //xtensions: ['.coffee', '.hbs'],
     debug: true
-  });
+});
 
-  var bundle = function(reloadBrowser) {
+
+var bundle = function(dest, reloadBrowser) {
     var stream = bundler
-      .bundle()
-      .on('error', function(err){
-            log(err.message);
-            notify('Browserify error: javascript failed to compile, browser will not refresh till .js code fixed');
-            // end this stream
-            this.emit('end');
-        })
-      .pipe(source('app/' + config.browserified))
-      .pipe(buffer())
-      .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-      .pipe(plugins.ngAnnotate({
-            add: true,
-            single_quotes: true
-        }))
-       // Add transformation tasks to the pipeline here.
-      .pipe(sourcemaps.write('./')) // writes .map file
-      .pipe(gulp.dest(config.dev));
+          .bundle()
+          .on('error', function(err){
+                log(err.message);
+                notify('Browserify error: javascript failed to compile, browser will not refresh till .js code fixed');
+                // end this stream
+                this.emit('end');
+            })
+          .pipe(source(config.browserified))
+          .pipe(buffer())
+          .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
+          .pipe(plugins.ngAnnotate({
+                add: true,
+                single_quotes: true
+            }))
+           // Add transformation tasks to the pipeline here.
+          .pipe(sourcemaps.write('./')) // writes .map file
+          .pipe(gulp.dest(dest));
 
-      if(reloadBrowser) {
-        stream.pipe(browserSync.reload({stream:true}));
-      }
+  if(reloadBrowser) {
+    stream.pipe(browserSync.reload({stream:true}));
+  }
 
-      return stream;
-  };
+  return stream;
+};
+
+gulp.task('browserify', function() {
+
+  log('Reading the app\'s JavaScript and bundling dependencies to ' + config.dev + config.browserified);
 
   bundler = watchify(bundler);
   bundler.on('update', function() { 
     log('watchify change!');
-    bundle(true);
+    bundle(config.dev, true);
   });
 
-  return bundle();
+  return bundle(config.dev);
 });
 
+
+gulp.task('build-browserify', function() {
+
+  log('Reading the app\'s JavaScript and bundling dependencies to one file ' + config.build + config.browserified);
+
+  return bundle(config.build);
+});
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// Inject all the files into the new index.html
+// @return {Stream}
+//
+/////////////////////////////////////////////////////////////////////////////////////
 gulp.task('index', function () {
     var dest = config.dev;
 
-    log('Copying and injecting index.html to ' + dest);
+    log('Inject all the files into the new  ' + dest + 'index.html');
 
     var target = gulp.src(config.client + config.index);
      // It's not necessary to read the files (will speed up things), we're only after their config: 
     var sourcesCss = gulp.src(config.dev + 'app/css/**/*.css',  {read: false});
     var vendorCss = gulp.src(config.dev + 'app/vendorcss/**/*.css',  {read: false});
-    var sources = gulp.src(config.dev + 'app/*.js');
+    var sources = gulp.src(config.dev + '**/*.js');
 
     var options = {
          addRootSlash: false,
@@ -241,10 +268,16 @@ gulp.task('index', function () {
         .pipe(gulp.dest(dest));
 });
 
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// Inject all the files into the new index.html
+// @return {Stream}
+//
+/////////////////////////////////////////////////////////////////////////////////////
 gulp.task('build-index', function () {
     var dest = config.build;
 
-    log('Copying and injecting index.html to ' + dest);
+    log('Inject all the files into the new  ' + dest + 'index.html');
 
     var target = gulp.src(config.client + config.index);
     // It's not necessary to read the files (will speed up things), we're only after their config: 
@@ -269,13 +302,13 @@ gulp.task('build-index', function () {
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-// Inject all the files into the new index.html
+// Revision files to bust cache on an existing app users
 // rev, but no map
 // @return {Stream}
 //
 /////////////////////////////////////////////////////////////////////////////////////
 gulp.task('build-rev', function() {
-    log('Rev\'ing files and adding revs to index.html');
+    log('Rev\'ing files index.html');
 
     var minified = config.build + '**/*.min.*';
     var index = config.build + config.index;
@@ -381,15 +414,9 @@ gulp.task('build-js-tidy', function() {
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-// Big Gulps
-//
-/////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////
-//
 // This will run in this order:
 // * clean
-// * 'css', 'js', 'html' in parallel
+// * 'css', 'broswerify', 'html' in parallel
 // * index
 // * browser-sync
 // * Finally, onDevComplete()
