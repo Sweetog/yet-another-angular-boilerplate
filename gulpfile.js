@@ -47,12 +47,21 @@ var banner = [
 ].join('');
 
 
-gulp.task('html', ['content'], function(){
+gulp.task('html', ['content', 'json'], function(){
     var dest = config.dev + 'app';
 
     log('copying templates/html to ' + dest);
 
     gulp.src(config.client + 'app/**/*.html')
+        .pipe(gulp.dest(dest));
+});
+
+gulp.task('json', function(){
+    var dest = config.dev + 'app';
+
+    log('copying json to ' + dest);
+
+    gulp.src(config.client + 'app/**/*.json')
         .pipe(gulp.dest(dest));
 });
 
@@ -98,9 +107,6 @@ gulp.task('css', ['vendorcss'], function () {
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
     .pipe(autoprefixer('last 2 version'))
-    //.pipe(cssnano())
-    //.pipe(rename({ suffix: '.min' }))
-    //.pipe(header(banner, { package : package }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(dest));
 });
@@ -125,6 +131,10 @@ gulp.task('build-css', ['build-vendorcss'], function () {
     return gulp.src(config.css)
         .pipe(sass().on('error', sass.logError))
         .pipe(autoprefixer('last 2 versions'))
+        .pipe(plugins.concat('style.css'))
+        .pipe(plugins.uncss({
+             html: [config.client + 'app/index.html', config.client + 'app/**/*.html']
+         }))
         .pipe(cssnano()) //minify
         .pipe(rename({ suffix: '.min' }))
         .pipe(header(banner, { package : package }))
