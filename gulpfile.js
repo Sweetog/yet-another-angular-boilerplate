@@ -74,6 +74,15 @@ gulp.task('content', function(){
         .pipe(gulp.dest(dest));
 });
 
+gulp.task('build-content', function(){
+    var dest = config.build + 'content';
+
+    log('copying content to ' + dest);
+
+    gulp.src(config.client + 'content/**/*.**')
+        .pipe(gulp.dest(dest));
+});
+
 /////////////////////////////////////////////////////////////////////////////////////
 //
 // Create $templateCache from the html templates
@@ -111,8 +120,8 @@ gulp.task('css', ['vendorcss'], function () {
     .pipe(gulp.dest(dest));
 });
 
-gulp.task('vendorcss', function () {
-    var dest = config.dev + 'app/vendorcss';
+gulp.task('vendorcss', ['vendorfonts'],function () {
+    var dest = config.dev + 'app/vendor/css';
 
     log('Compiling Vendor SASS and source mapping to ' + dest);
 
@@ -125,6 +134,24 @@ gulp.task('vendorcss', function () {
     //.pipe(header(banner, { package : package }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(dest));
+});
+
+gulp.task('vendorfonts', function(){
+    var dest = config.dev + 'app/vendor/fonts';
+
+    log('copying content to ' + dest);
+
+    gulp.src(config.vendorfonts)
+        .pipe(gulp.dest(dest));
+});
+
+gulp.task('build-vendorfonts', function(){
+    var dest = config.build + 'vendor/fonts';
+
+    log('copying content to ' + dest);
+
+    gulp.src(config.vendorfonts)
+        .pipe(gulp.dest(dest));
 });
 
 gulp.task('build-css', ['build-vendorcss'], function () {
@@ -141,8 +168,8 @@ gulp.task('build-css', ['build-vendorcss'], function () {
         .pipe(gulp.dest(config.build)) //save min.css
 });
 
-gulp.task('build-vendorcss', function () {
-    var dest = config.build;
+gulp.task('build-vendorcss', ['build-vendorfonts'], function () {
+    var dest = config.build + 'vendor/css';
 
     log('Compiling Vendor SASS ' + dest);
 
@@ -258,7 +285,7 @@ gulp.task('index', function () {
     var target = gulp.src(config.client + config.index);
      // It's not necessary to read the files (will speed up things), we're only after their config: 
     var sourcesCss = gulp.src(config.dev + 'app/css/**/*.css',  {read: false});
-    var vendorCss = gulp.src(config.dev + 'app/vendorcss/**/*.css',  {read: false});
+    var vendorCss = gulp.src(config.dev + 'app/vendor/**/*.css',  {read: false});
     var sources = gulp.src(config.dev + '**/*.js');
 
     var options = {
@@ -291,8 +318,8 @@ gulp.task('build-index', function () {
 
     var target = gulp.src(config.client + config.index);
     // It's not necessary to read the files (will speed up things), we're only after their config: 
-    var sources = gulp.src([config.build + '**/*.js', config.build + '**/*.css' , '!' + config.build + config.vendorcssmin], {read: false});
-    var vendorCss = gulp.src(config.build + config.vendorcssmin,  {read: false});
+    var sources = gulp.src([config.build + '**/*.js', config.build + '*.css'], {read: false});
+    var vendorCss = gulp.src(config.build + 'vendor/css/**.css',  {read: false});
  
     var injectOptions = {
          addRootSlash: false,
@@ -468,6 +495,23 @@ gulp.task('dev', function () {
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
+// Test dev big gulp, no browser-sync, This will run in this order:
+// * clean
+// * 'css', 'broswerify', 'html' in parallel
+// * index
+// * Finally, onDevComplete()
+//
+/////////////////////////////////////////////////////////////////////////////////////
+gulp.task('dev-test', function () {
+    runSequence(
+        'clean',
+        ['css', 'browserify', 'html'],
+        'index'
+    );
+});
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
 // This will run in this order: 
 // * clean
 // * build-browserify and build-css in parallel
@@ -482,7 +526,7 @@ gulp.task('dev', function () {
 gulp.task('build', function() {
     runSequence(
         'clean',
-        ['build-browserify', 'build-css'],
+        ['build-browserify', 'build-css', 'build-content'],
         'build-js',
         'build-js-tidy',
         'build-index',

@@ -13,22 +13,20 @@
   "index": "index.html",
   "browserified": "browserified.js",
   "templates": "templates.js",
-  "vendorcssmin": "vendor.min.css",
   "port": 3000,
-  "vendorjs-notneeded-browserify": [
-    "./node_modules/angular/angular.js",
-    "./node_modules/angular-animate/angular-animate.js",
-    "./node_modules/angular-route/angular-route.js",
-    "./node_modules/angularjs-toaster/toaster.js"
-  ],
   "js": [
     "./src/client/app/**/*.js"
   ],
   "vendorcss": [
-    "./node_modules/angularjs-toaster/toaster.scss"
+    "./node_modules/angularjs-toaster/toaster.scss",
+    "./node_modules/angular-ui-bootstrap/dist/ui-bootstrap-csp.css",
+    "./node_modules/bootstrap/dist/css/bootstrap.css"
   ],
   "css": [
     "./src/client/app/scss/style.scss"
+  ],
+  "vendorfonts": [
+    "./node_modules/bootstrap/dist/fonts/**.*"
   ],
   "report": "./report/",
   "build": "./build/"
