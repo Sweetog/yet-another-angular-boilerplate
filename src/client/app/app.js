@@ -1,8 +1,7 @@
 ﻿require('angular'); //node_module
-require('angular-animate'); //node_module
-require('./core'); //core directory
-require('./login'); //login directory
-
+require('./core'); //app.core module
+require('./login'); //app.login module
+require('./sandbox'); //app.signup module
 
 'use strict';
 
@@ -25,5 +24,23 @@ angular.module('app', [
     /*
      * Feature areas
      */
-    'app.login'
-]);
+    'app.login',
+
+     /*
+     * Just for testing
+     */
+
+     'app.sandbox'
+])
+.run(setDefaultRoute);
+
+/* @ngInject */
+function setDefaultRoute($state, logger, config, appstates) {
+    var isSignup = window.location.host.indexOf("signup") == 0;
+
+    if (config.startWithRoute) {
+        $state.go(config.startWithRoute);
+    } else if (isSignup || config.startWithSignupFeature) {
+        $state.go(appstates.signup_dealer);
+    } 
+}

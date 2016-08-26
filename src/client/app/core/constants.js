@@ -3,8 +3,10 @@
 
 angular
     .module('app.core')
-    .constant('constant.state.login',
+    .constant('appstates',
     {
-        'state.blah': 'state.blah'
+    	'signup': 'signup',
+    	'signup_dealer': 'signup.dealer',
+    	'signup_admin': 'signup.admin',
+    	'signup_account': 'signup.account'
     });
-

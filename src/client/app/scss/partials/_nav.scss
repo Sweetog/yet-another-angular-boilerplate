@@ -1,10 +1,16 @@
-.nav {
-  ul {
-    list-style: none;
-    li {
-      a {
+.nav-tabs{
+	text-align: center;
+    border-top: .3px solid #b1e2f3;
+    
+}
 
-      }
-    }
-  }
+.nav-tabs li{
+	border-bottom: 1px solid #b1e2f3;
+}
+.nav-tab-left, .nav-tab{
+	border-left:.5px solid #b1e2f3;	
+}
+.nav-tab-right{
+	border-right:.5px solid #b1e2f3;
+	border-left:.5px solid #b1e2f3;		
 }

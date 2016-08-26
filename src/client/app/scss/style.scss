@@ -11,7 +11,6 @@
 // Config modules
 @import 'modules/_vars.scss';
 @import 'modules/_clearfix.scss';
-@import 'modules/_defaults.scss';
 @import 'modules/_normalize.scss';
 //----------------------------------*\
 // PARTIALS
@@ -27,11 +26,14 @@
 // OBJECTS & MODULES
 //----------------------------------*/
 
-@import 'modules/_buttons.scss';
 @import 'modules/_inputs.scss';
 @import 'modules/_lists.scss';
 @import 'modules/_typography.scss';
 @import 'modules/_misc.scss';
+@import 'modules/_signup.scss';
+@import 'modules/_people.scss';
+@import 'modules/_places.scss';
+@import 'modules/_login.scss';
 @import 'modules/_app.scss';
 
 // Enhancement modules

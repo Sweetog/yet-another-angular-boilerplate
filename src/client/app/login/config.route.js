@@ -12,20 +12,13 @@ function appRun(routehelper) {
 function getRoutes() {
     return [
         {
-            url: '/login', //used with ngRoute
-            state: { //used with ui-router
-                name: 'login',
-                abstract: true,
-            },
+            url: '/login',
+            state: 'login',
             config: {
                 templateUrl: 'app/login/login.html',
                 controller: 'Login',
                 controllerAs: 'vm',
                 title: 'Login'
-                /*settings: {
-                    nav: 2,
-                    content: '<i class="fa fa-lock"></i> Avengers'
-                }*/
             }
         }
     ];

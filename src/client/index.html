@@ -1,4 +1,4 @@
-<html ng-app="app">
+﻿<html ng-app="app">
 
 <head>
     <base href="/">
@@ -11,10 +11,13 @@
     <link rel="icon" href="">
     <title ng-bind="title || 'My App'"></title>
     <!-- CSS STYLES -->
+
     <!-- inject-vendor:css -->
     <!-- endinject -->
+
     <!-- inject:css -->
     <!-- endinject -->
+
     <!-- IE SUPPORT -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -23,26 +26,14 @@
 </head>
 
 <body>
-    <toaster-container toaster-options="{'time-out': 3000, 'position-class': 'toast-bottom-right', 'close-button':true, 'animation-class': 'toast-bottom-right'}"></toaster-container>
-    <h4>Hello World</h4>
-    <ul>
-        <li>
-            <a href="/login">Login ngRoute html5Mode = true way</a>
-        </li>
-    </ul>
+<toaster-container toaster-options="{'time-out': 3000, 'position-class': 'toast-bottom-right', 'close-button':true, 'animation-class': 'toast-bottom-right'}"></toaster-container>
     <ui-view>
-        <ul>
-            <li>
-                <a ui-sref="login" style="cursor: pointer;">Login ui-router way</a>
-            </li>
-        </ul>
         <!-- ui-route page content -->
     </ui-view>
-    <ng-view>
-        <!--ngRoute page content-->
-    </ng-view>
+
     <!-- inject-vendor:js -->
     <!-- endinject -->
+    
     <!-- inject:js -->
     <!-- endinject -->
 </body>
